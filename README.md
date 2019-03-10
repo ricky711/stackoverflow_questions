@@ -1,2 +1,2 @@
 # stackoverflow_questions
-craw questions ordered by votes in stackoverflow.com
+对stackoverflow.com的question页面，按votes倒序排序，爬前面主要的问题
