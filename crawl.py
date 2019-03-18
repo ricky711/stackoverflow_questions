@@ -64,9 +64,9 @@ def parser(response, id_):
 
 # 存储器
 def storag(fields):
-    connect = pymysql.connect(host='',
-                              user='',
-                              password='',
+    connect = pymysql.connect(host='localhost',
+                              user='richardgao',
+                              password='2001101549Gao=',
                               db='crawl',
                               port=3306,
                               charset='utf8mb4')
@@ -86,6 +86,8 @@ def storag(fields):
 def main(targetUrls,failUrls):
     while True:
         page_index = targetUrls.get()
+        if page_index is None:
+            break
         response = crawl(url_root + str(page_index))
         if response is not None:
             question_list = parser(response, page_index)
@@ -97,17 +99,21 @@ def main(targetUrls,failUrls):
 
 if __name__ == '__main__':
     print(time.strftime('%Y-%m-%d %H:%M:%S'), 'start')
+    numProcess = cpu_count()
 
     with Manager() as manager:
         targetUrls = manager.Queue()
         failUrls = manager.Queue()
 
-        for i in range(21):
+        for i in range(1, 21):
             targetUrls.put(i)
         
+        for n in range(numProcess):
+            targetUrls.put(None)
+
         pList = []
 
-        for i in range(cpu_count):
+        for i in range(numProcess):
             p = Process(target=main, args=(targetUrls,failUrls))
             p.start()
             pList.append(p)
@@ -115,6 +121,6 @@ if __name__ == '__main__':
         for p in pList:
             p.join()
         
-        print("failUrls' size is", failUrls.qsize())
+        # print("failUrls' size is", failUrls.qsize())
     
     print(time.strftime('%Y-%m-%d %H:%M:%S'), 'end')
