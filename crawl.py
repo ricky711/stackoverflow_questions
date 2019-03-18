@@ -64,9 +64,9 @@ def parser(response, id_):
 
 # 存储器
 def storag(fields):
-    connect = pymysql.connect(host='localhost',
-                              user='richardgao',
-                              password='2001101549Gao=',
+    connect = pymysql.connect(host='',
+                              user='',
+                              password='',
                               db='crawl',
                               port=3306,
                               charset='utf8mb4')
