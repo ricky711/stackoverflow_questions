@@ -3,11 +3,9 @@ from requests.adapters import HTTPAdapter
 from bs4 import BeautifulSoup
 import time
 import pymysql
-from multiprocessing import Pool, Manager, cpu_count
+from multiprocessing import Process, Manager, cpu_count
 
 url_root = 'https://stackoverflow.com/questions?sort=votes&pagesize=50&page='
-manager = Manager()
-failed_urls = manager.list()
 
 
 # 爬取器
@@ -29,7 +27,6 @@ def crawl(url):
         print(time.strftime('%Y-%m-%d %H:%M:%S'), 'failed crawled:', url)
         print(e)
         response = None
-        failed_urls.append(url)
 
     return response
 
@@ -86,19 +83,38 @@ def storag(fields):
     connect.close()
 
 
-def main(page_index):
-    response = crawl(url_root + str(page_index))
-    if response is not None:
-        question_list = parser(response, page_index)
-        storag(question_list)
-        time.sleep(1)
+def main(targetUrls,failUrls):
+    while True:
+        page_index = targetUrls.get()
+        response = crawl(url_root + str(page_index))
+        if response is not None:
+            question_list = parser(response, page_index)
+            storag(question_list)
+            time.sleep(1)
+        else:
+            failUrls.put(page_index)
 
 
 if __name__ == '__main__':
-    page_list = [i for i in range(1, 21)]
     print(time.strftime('%Y-%m-%d %H:%M:%S'), 'start')
 
-    with Pool(cpu_count()) as p:
-        p.map(main, page_list)
+    with Manager() as manager:
+        targetUrls = manager.Queue()
+        failUrls = manager.Queue()
 
+        for i in range(21):
+            targetUrls.put(i)
+        
+        pList = []
+
+        for i in range(cpu_count):
+            p = Process(target=main, args=(targetUrls,failUrls))
+            p.start()
+            pList.append(p)
+        
+        for p in pList:
+            p.join()
+        
+        print("failUrls' size is", failUrls.qsize())
+    
     print(time.strftime('%Y-%m-%d %H:%M:%S'), 'end')
