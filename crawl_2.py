@@ -94,7 +94,7 @@ def crawl_main(targeturls, pendingstorage):
         if not page_index:
             break
         response = crawl(url_root + str(page_index))
-        if response is not None:
+        if response:
             question_list = parser(response, page_index)
             pendingstorage.put(question_list)
             time.sleep(1)
