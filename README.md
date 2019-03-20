@@ -19,6 +19,16 @@
 4. 优化storage()函数，原来一条一条数据进行execute+commit，改成executemany批量添加后再commit
 5. 后续需要优化的地方：爬取任务与存储任务同时执行，爬取任务进行过程中，只要存储队列中有数据就进行存储。
 
+更新：
+
+嗯~ o(*￣▽￣*)o。。原来写入mysql数据丢失的问题不是因为进程的问题。。而是parser()函数进行解析的时候没有考虑到网页内容异常的情况，导致没有解析到目标内容，函数返回就是个[]，导致写入失败。。所以异常检测还是不能偷懒不码的。。
+
+加入了多个检测添加，终于发现访问频繁response会提示，
+
+<h1>Too many requests</h1>\n 
+    <p>This IP address () has performed an unusual high number of requests and has been temporarily rate limited. If you believe this to be in error, please contact us at <a href="mailto:team@stackexchange.com?
+
+不过趁这个机会尝试了使用multiprocess.Manager().Queue()进行消息同步，还有Process()的使用
 
 数据分析：
 
